@@ -129,8 +129,24 @@ function createServer(env: Env) {
   return server;
 }
 
+function authenticateRequest(request: Request, env: Env): Response | null {
+  const authHeader = request.headers.get('Authorization');
+  const expected = `Bearer ${env.MCP_SHARED_SECRET}`;
+
+  if (!env.MCP_SHARED_SECRET) return null; // No secret configured = open (dev mode)
+  if (authHeader === expected) return null; // Authenticated
+
+  return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+    status: 401,
+    headers: { 'Content-Type': 'application/json' },
+  });
+}
+
 export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
+    const authError = authenticateRequest(request, env);
+    if (authError) return authError;
+
     const server = createServer(env);
     return createMcpHandler(server, { enableJsonResponse: true })(request, env, ctx);
   },

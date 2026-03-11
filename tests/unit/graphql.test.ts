@@ -16,6 +16,7 @@ function makeCtx(): ToolContext {
       FIA_ACCESS_KEY: 'test-key',
       FIA_API_URL: 'https://api.example.com/graphql',
       FIA_AUTH_URL: 'https://auth.example.com/token',
+      MCP_SHARED_SECRET: 'test-secret',
       ENVIRONMENT: 'test',
     },
     callCount: 0,
@@ -122,7 +123,7 @@ describe('graphqlFetch', () => {
 
     expect(result).toEqual({ ok: true });
     expect(invalidateToken).toHaveBeenCalled();
-    expect(ctx.callCount).toBe(1);
+    expect(ctx.callCount).toBe(2); // initial call + retry
   });
 
   it('throws on missing data', async () => {

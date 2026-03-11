@@ -1,11 +1,13 @@
 import { graphqlFetch } from '../graphql';
 import type { ToolContext } from '../types';
+import { paginationWarning } from '../types';
 
 const QUERY = `query GetPericopeMedia($pericopeId: ID!) {
   pericope(id: $pericopeId) {
     id
     verseRangeLong
     map(first: 50) {
+      pageInfo { hasNextPage }
       edges {
         node {
           uniqueIdentifier
@@ -25,6 +27,7 @@ const QUERY = `query GetPericopeMedia($pericopeId: ID!) {
       }
     }
     mediaItems(first: 50) {
+      pageInfo { hasNextPage }
       edges {
         node {
           uniqueIdentifier
@@ -109,8 +112,8 @@ interface Result {
   pericope: {
     id: string;
     verseRangeLong: string | null;
-    map: { edges: Array<{ node: MapNode }> };
-    mediaItems: { edges: Array<{ node: MediaItemNode }> };
+    map: { pageInfo: { hasNextPage: boolean }; edges: Array<{ node: MapNode }> };
+    mediaItems: { pageInfo: { hasNextPage: boolean }; edges: Array<{ node: MediaItemNode }> };
   };
 }
 
@@ -180,5 +183,8 @@ export async function getPericopeMedia(
     sections.push('\nNo media found for this pericope.');
   }
 
-  return sections.join('\n');
+  const mapWarn = paginationWarning('maps', pericope.map.pageInfo.hasNextPage);
+  const mediaWarn = paginationWarning('media items', pericope.mediaItems.pageInfo.hasNextPage);
+
+  return sections.join('\n') + mapWarn + mediaWarn;
 }

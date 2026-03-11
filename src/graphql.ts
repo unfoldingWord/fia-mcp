@@ -17,9 +17,10 @@ export async function graphqlFetch<T>(
 
   let res = await doFetch(ctx.env.FIA_API_URL, token, query, variables);
 
-  // On 401, invalidate cache and retry once
+  // On 401, invalidate cache and retry once (counts as a second API call)
   if (res.status === 401) {
     invalidateToken();
+    ctx.callCount++;
     const newToken = await getAccessToken(ctx.env.FIA_ACCESS_KEY, ctx.env.FIA_AUTH_URL);
     res = await doFetch(ctx.env.FIA_API_URL, newToken, query, variables);
   }

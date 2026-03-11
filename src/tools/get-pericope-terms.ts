@@ -1,11 +1,13 @@
 import { graphqlFetch } from '../graphql';
 import type { ToolContext } from '../types';
+import { paginationWarning } from '../types';
 
 const QUERY = `query GetPericopeTerms($pericopeId: ID!) {
   pericope(id: $pericopeId) {
     id
     verseRangeLong
     terms(first: 100) {
+      pageInfo { hasNextPage }
       edges {
         node {
           uniqueIdentifier
@@ -47,7 +49,7 @@ interface Result {
   pericope: {
     id: string;
     verseRangeLong: string | null;
-    terms: { edges: Array<{ node: TermNode }> };
+    terms: { pageInfo: { hasNextPage: boolean }; edges: Array<{ node: TermNode }> };
   };
 }
 
@@ -90,5 +92,7 @@ export async function getPericopeTerms(
     return `No terms found for pericope ${label} in language ${languageId}.`;
   }
 
-  return [`## Glossary for ${label}`, '', ...termSections].join('\n\n');
+  const warning = paginationWarning('terms', pericope.terms.pageInfo.hasNextPage);
+
+  return [`## Glossary for ${label}`, '', ...termSections].join('\n\n') + warning;
 }

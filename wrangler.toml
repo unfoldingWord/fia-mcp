@@ -8,7 +8,9 @@ FIA_API_URL = "https://api.fiaproject.org/graphql"
 FIA_AUTH_URL = "https://auth.fiaproject.org/token"
 ENVIRONMENT = "production"
 
-# FIA_ACCESS_KEY set via: wrangler secret put FIA_ACCESS_KEY
+# Secrets set via: wrangler secret put <NAME> [--env staging|dev]
+# - FIA_ACCESS_KEY: FIA API access key
+# - MCP_SHARED_SECRET: Shared secret for authenticating MCP clients
 
 [env.staging]
 name = "fia-mcp-staging"

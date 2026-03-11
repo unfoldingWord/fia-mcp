@@ -80,7 +80,19 @@ A full pericope walkthrough uses ~6 downstream API calls (one per tool).
 
 ## Authentication
 
-All authentication is handled internally:
+### MCP Server Auth (inbound)
+
+Callers must send a shared secret as a Bearer token:
+
+```
+Authorization: Bearer <MCP_SHARED_SECRET>
+```
+
+Set `MCP_SHARED_SECRET` as a Cloudflare secret per environment. If not set, the server runs open (useful for local dev).
+
+### FIA API Auth (outbound)
+
+All FIA authentication is handled internally:
 
 1. Access key (`FIA_ACCESS_KEY`) stored as a Cloudflare secret
 2. Server exchanges it for a short-lived bearer token (15-min TTL, cached for 14 min)
@@ -104,7 +116,7 @@ FIA_ACCESS_KEY=your_key_here
 ### Testing
 
 ```bash
-# Test tools/list
+# Test tools/list (no auth needed in local dev if MCP_SHARED_SECRET is unset)
 curl -X POST http://localhost:8787/mcp \
   -H "Content-Type: application/json" \
   -H "Accept: application/json, text/event-stream" \
@@ -115,6 +127,13 @@ curl -X POST http://localhost:8787/mcp \
   -H "Content-Type: application/json" \
   -H "Accept: application/json, text/event-stream" \
   -d '{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"fia_list_languages","arguments":{}}}'
+
+# With auth (required in deployed environments)
+curl -X POST https://fia.mcp.servant.bible/mcp \
+  -H "Content-Type: application/json" \
+  -H "Accept: application/json, text/event-stream" \
+  -H "Authorization: Bearer YOUR_MCP_SHARED_SECRET" \
+  -d '{"jsonrpc":"2.0","id":1,"method":"tools/list","params":{}}'
 ```
 
 ### Environments
@@ -131,6 +150,9 @@ All environments hit the same FIA API. Secrets are set per environment:
 wrangler secret put FIA_ACCESS_KEY                    # prod
 wrangler secret put FIA_ACCESS_KEY --env staging      # staging
 wrangler secret put FIA_ACCESS_KEY --env dev          # dev
+wrangler secret put MCP_SHARED_SECRET                 # prod
+wrangler secret put MCP_SHARED_SECRET --env staging   # staging
+wrangler secret put MCP_SHARED_SECRET --env dev       # dev
 ```
 
 ## Quality Gates
@@ -170,7 +192,10 @@ Add to `MCP_SERVERS` KV (key: `unfoldingWord`):
   "name": "FIA Internalization",
   "url": "https://fia.mcp.servant.bible/",
   "enabled": true,
-  "priority": 2
+  "priority": 2,
+  "headers": {
+    "Authorization": "Bearer <MCP_SHARED_SECRET>"
+  }
 }
 ```
 

@@ -1,10 +1,12 @@
 import { graphqlFetch } from '../graphql';
 import type { ToolContext } from '../types';
+import { paginationWarning } from '../types';
 
 const QUERY = `query GetPericopes($bookId: ID!) {
   book(id: $bookId) {
     uniqueIdentifier
     pericopes(first: 200) {
+      pageInfo { hasNextPage }
       edges {
         node {
           id
@@ -26,6 +28,7 @@ interface Result {
   book: {
     uniqueIdentifier: string;
     pericopes: {
+      pageInfo: { hasNextPage: boolean };
       edges: Array<{
         node: {
           id: string;
@@ -57,11 +60,15 @@ export async function getPericopes(ctx: ToolContext, bookId: string): Promise<st
       `| ${p.id} | ${p.pId} | ${p.sequence} | ${p.verseRangeShort ?? ''} | ${p.verseRangeLong ?? ''} |`
   );
 
-  return [
-    `## Pericopes for ${data.book.uniqueIdentifier}`,
-    '',
-    '| ID | pId | Seq | Short Range | Long Range |',
-    '|---|---|---|---|---|',
-    ...rows,
-  ].join('\n');
+  const warning = paginationWarning('pericopes', data.book.pericopes.pageInfo.hasNextPage);
+
+  return (
+    [
+      `## Pericopes for ${data.book.uniqueIdentifier}`,
+      '',
+      '| ID | pId | Seq | Short Range | Long Range |',
+      '|---|---|---|---|---|',
+      ...rows,
+    ].join('\n') + warning
+  );
 }

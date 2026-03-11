@@ -22,6 +22,7 @@ function makeCtx(): ToolContext {
       FIA_ACCESS_KEY: 'k',
       FIA_API_URL: 'u',
       FIA_AUTH_URL: 'a',
+      MCP_SHARED_SECRET: 'test-secret',
       ENVIRONMENT: 'test',
     },
     callCount: 0,
@@ -36,6 +37,7 @@ describe('listLanguages', () => {
   it('returns markdown table of languages', async () => {
     mockFetch.mockResolvedValue({
       languages: {
+        pageInfo: { hasNextPage: false },
         edges: [
           {
             node: {
@@ -66,7 +68,7 @@ describe('listLanguages', () => {
   });
 
   it('returns message when no languages', async () => {
-    mockFetch.mockResolvedValue({ languages: { edges: [] } });
+    mockFetch.mockResolvedValue({ languages: { pageInfo: { hasNextPage: false }, edges: [] } });
     const result = await listLanguages(makeCtx());
     expect(result).toBe('No languages found.');
   });
@@ -74,6 +76,7 @@ describe('listLanguages', () => {
   it('handles null fields gracefully', async () => {
     mockFetch.mockResolvedValue({
       languages: {
+        pageInfo: { hasNextPage: false },
         edges: [
           {
             node: {
@@ -97,6 +100,7 @@ describe('listBooks', () => {
   const booksData = {
     language: {
       bookTranslations: {
+        pageInfo: { hasNextPage: false },
         edges: [
           {
             node: { title: 'Genesis', book: { id: 'gen', uniqueIdentifier: 'genesis', lineup: 1 } },
@@ -137,7 +141,7 @@ describe('listBooks', () => {
 
   it('handles empty results', async () => {
     mockFetch.mockResolvedValue({
-      language: { bookTranslations: { edges: [] } },
+      language: { bookTranslations: { pageInfo: { hasNextPage: false }, edges: [] } },
     });
     const result = await listBooks(makeCtx(), 'xyz');
     expect(result).toBe('No books found for this language/testament.');
@@ -150,6 +154,7 @@ describe('getPericopes', () => {
       book: {
         uniqueIdentifier: 'mark',
         pericopes: {
+          pageInfo: { hasNextPage: false },
           edges: [
             {
               node: {
@@ -194,7 +199,7 @@ describe('getPericopes', () => {
 
   it('handles empty pericopes', async () => {
     mockFetch.mockResolvedValue({
-      book: { uniqueIdentifier: 'xyz', pericopes: { edges: [] } },
+      book: { uniqueIdentifier: 'xyz', pericopes: { pageInfo: { hasNextPage: false }, edges: [] } },
     });
     const result = await getPericopes(makeCtx(), 'xyz');
     expect(result).toContain('No pericopes found');
@@ -210,6 +215,7 @@ describe('getStepRenderings', () => {
         verseRangeLong: '4:35-4:41',
         book: { uniqueIdentifier: 'mark' },
         stepRenderings: {
+          pageInfo: { hasNextPage: false },
           edges: steps.reverse().map((s) => ({
             node: {
               id: `sr-${s}`,
@@ -248,6 +254,7 @@ describe('getStepRenderings', () => {
         verseRangeLong: '1:1-1:13',
         book: { uniqueIdentifier: 'mark' },
         stepRenderings: {
+          pageInfo: { hasNextPage: false },
           edges: [
             {
               node: {
@@ -289,7 +296,7 @@ describe('getStepRenderings', () => {
         id: 'mrk-p1',
         verseRangeLong: '1:1-1:13',
         book: { uniqueIdentifier: 'mark' },
-        stepRenderings: { edges: [] },
+        stepRenderings: { pageInfo: { hasNextPage: false }, edges: [] },
       },
     });
 
@@ -304,6 +311,7 @@ describe('getStepRenderings', () => {
         verseRangeLong: '1:1',
         book: { uniqueIdentifier: 'gen' },
         stepRenderings: {
+          pageInfo: { hasNextPage: false },
           edges: [
             {
               node: {
@@ -334,11 +342,13 @@ describe('getPericopeMedia', () => {
         id: 'mrk-p17',
         verseRangeLong: '4:35-4:41',
         map: {
+          pageInfo: { hasNextPage: false },
           edges: [
             {
               node: {
                 uniqueIdentifier: 'map1',
                 mapTranslations: {
+                  pageInfo: { hasNextPage: false },
                   edges: [
                     {
                       node: {
@@ -355,11 +365,13 @@ describe('getPericopeMedia', () => {
           ],
         },
         mediaItems: {
+          pageInfo: { hasNextPage: false },
           edges: [
             {
               node: {
                 uniqueIdentifier: 'boat',
                 mediaItemTranslations: {
+                  pageInfo: { hasNextPage: false },
                   edges: [
                     {
                       node: {
@@ -371,6 +383,7 @@ describe('getPericopeMedia', () => {
                   ],
                 },
                 mediaAssets: {
+                  pageInfo: { hasNextPage: false },
                   edges: [
                     {
                       node: {
@@ -402,8 +415,8 @@ describe('getPericopeMedia', () => {
       pericope: {
         id: 'p1',
         verseRangeLong: '1:1',
-        map: { edges: [] },
-        mediaItems: { edges: [] },
+        map: { pageInfo: { hasNextPage: false }, edges: [] },
+        mediaItems: { pageInfo: { hasNextPage: false }, edges: [] },
       },
     });
 
@@ -417,11 +430,13 @@ describe('getPericopeMedia', () => {
         id: 'p1',
         verseRangeLong: '1:1',
         map: {
+          pageInfo: { hasNextPage: false },
           edges: [
             {
               node: {
                 uniqueIdentifier: 'map1',
                 mapTranslations: {
+                  pageInfo: { hasNextPage: false },
                   edges: [
                     {
                       node: {
@@ -445,7 +460,7 @@ describe('getPericopeMedia', () => {
             },
           ],
         },
-        mediaItems: { edges: [] },
+        mediaItems: { pageInfo: { hasNextPage: false }, edges: [] },
       },
     });
 
@@ -462,11 +477,13 @@ describe('getPericopeTerms', () => {
         id: 'mrk-p17',
         verseRangeLong: '4:35-4:41',
         terms: {
+          pageInfo: { hasNextPage: false },
           edges: [
             {
               node: {
                 uniqueIdentifier: 'faith',
                 termTranslations: {
+                  pageInfo: { hasNextPage: false },
                   edges: [
                     {
                       node: {
@@ -502,11 +519,13 @@ describe('getPericopeTerms', () => {
         id: 'p1',
         verseRangeLong: '1:1',
         terms: {
+          pageInfo: { hasNextPage: false },
           edges: [
             {
               node: {
                 uniqueIdentifier: 'term1',
                 termTranslations: {
+                  pageInfo: { hasNextPage: false },
                   edges: [
                     {
                       node: {
@@ -544,7 +563,11 @@ describe('getPericopeTerms', () => {
 
   it('handles no terms', async () => {
     mockFetch.mockResolvedValue({
-      pericope: { id: 'p1', verseRangeLong: '1:1', terms: { edges: [] } },
+      pericope: {
+        id: 'p1',
+        verseRangeLong: '1:1',
+        terms: { pageInfo: { hasNextPage: false }, edges: [] },
+      },
     });
     const result = await getPericopeTerms(makeCtx(), 'p1', 'eng');
     expect(result).toContain('No terms found');
@@ -556,11 +579,13 @@ describe('getPericopeTerms', () => {
         id: 'p1',
         verseRangeLong: '1:1',
         terms: {
+          pageInfo: { hasNextPage: false },
           edges: [
             {
               node: {
                 uniqueIdentifier: 't1',
                 termTranslations: {
+                  pageInfo: { hasNextPage: false },
                   edges: [
                     {
                       node: {

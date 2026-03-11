@@ -1,8 +1,10 @@
 import { graphqlFetch } from '../graphql';
 import type { ToolContext } from '../types';
+import { paginationWarning } from '../types';
 
 const QUERY = `{
   languages(first: 100) {
+    pageInfo { hasNextPage }
     edges {
       node {
         id
@@ -17,6 +19,7 @@ const QUERY = `{
 
 interface Result {
   languages: {
+    pageInfo: { hasNextPage: boolean };
     edges: Array<{
       node: {
         id: string;
@@ -40,9 +43,13 @@ export async function listLanguages(ctx: ToolContext): Promise<string> {
       `| ${l.id} | ${l.nameEnglish ?? ''} | ${l.nameLocal ?? ''} | ${l.textDirection ?? ''} | ${l.iso6391 ?? ''} |`
   );
 
-  return [
-    '| ID | English Name | Local Name | Direction | ISO 639-1 |',
-    '|---|---|---|---|---|',
-    ...rows,
-  ].join('\n');
+  const warning = paginationWarning('languages', data.languages.pageInfo.hasNextPage);
+
+  return (
+    [
+      '| ID | English Name | Local Name | Direction | ISO 639-1 |',
+      '|---|---|---|---|---|',
+      ...rows,
+    ].join('\n') + warning
+  );
 }

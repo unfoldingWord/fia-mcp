@@ -1,6 +1,11 @@
 import { graphqlFetch } from '../graphql';
 import type { ToolContext } from '../types';
+import { paginationWarning } from '../types';
 
+// TODO: Over-fetches all languages, filters client-side. The FIA API's
+// StepRenderingFilterNodes may support language filtering on the pericope's
+// stepRenderings connection, but this is unverified. Current payload is small
+// (~6 steps × ~15 languages = ~90 nodes) so the trade-off is acceptable.
 const QUERY = `query GetStepRenderings($pericopeId: ID!) {
   pericope(id: $pericopeId) {
     id
@@ -9,6 +14,7 @@ const QUERY = `query GetStepRenderings($pericopeId: ID!) {
       uniqueIdentifier
     }
     stepRenderings(first: 100) {
+      pageInfo { hasNextPage }
       edges {
         node {
           id
@@ -49,6 +55,7 @@ interface Result {
     verseRangeLong: string | null;
     book: { uniqueIdentifier: string };
     stepRenderings: {
+      pageInfo: { hasNextPage: boolean };
       edges: Array<{ node: StepRendering }>;
     };
   };
@@ -89,7 +96,8 @@ export async function getStepRenderings(
     (a, b) => stepSortKey(a.step.uniqueIdentifier) - stepSortKey(b.step.uniqueIdentifier)
   );
 
-  const header = `## ${pericope.book.uniqueIdentifier} — ${pericope.verseRangeLong ?? pericope.id}\n**Language:** ${renderings[0].language.nameEnglish ?? languageId}\n`;
+  const langName = renderings[0]?.language.nameEnglish ?? languageId;
+  const header = `## ${pericope.book.uniqueIdentifier} — ${pericope.verseRangeLong ?? pericope.id}\n**Language:** ${langName}\n`;
 
   const steps = renderings.map((r) => {
     const title = r.stepTranslation?.title ?? r.step.uniqueIdentifier;
@@ -101,7 +109,12 @@ export async function getStepRenderings(
     return `### Step: ${title}${wordCount}${audio}\n\n${r.textAsMarkdown ?? '*No text available*'}`;
   });
 
-  return [header, ...steps].join('\n\n---\n\n');
+  const warning = paginationWarning(
+    'step renderings',
+    pericope.stepRenderings.pageInfo.hasNextPage
+  );
+
+  return [header, ...steps].join('\n\n---\n\n') + warning;
 }
 
 function formatBytes(bytes: number | null): string {

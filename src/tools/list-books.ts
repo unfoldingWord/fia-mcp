@@ -1,9 +1,11 @@
 import { graphqlFetch } from '../graphql';
 import type { ToolContext } from '../types';
+import { paginationWarning } from '../types';
 
 const QUERY = `query ListBooks($languageId: ID!) {
   language(id: $languageId) {
     bookTranslations(first: 100) {
+      pageInfo { hasNextPage }
       edges {
         node {
           title
@@ -21,6 +23,7 @@ const QUERY = `query ListBooks($languageId: ID!) {
 interface Result {
   language: {
     bookTranslations: {
+      pageInfo: { hasNextPage: boolean };
       edges: Array<{
         node: {
           title: string | null;
@@ -61,5 +64,9 @@ export async function listBooks(
     (b) => `| ${b.book.id} | ${b.book.uniqueIdentifier} | ${b.title ?? ''} | ${b.book.lineup} |`
   );
 
-  return ['| ID | Identifier | Title | Lineup |', '|---|---|---|---|', ...rows].join('\n');
+  const warning = paginationWarning('books', data.language.bookTranslations.pageInfo.hasNextPage);
+
+  return (
+    ['| ID | Identifier | Title | Lineup |', '|---|---|---|---|', ...rows].join('\n') + warning
+  );
 }
