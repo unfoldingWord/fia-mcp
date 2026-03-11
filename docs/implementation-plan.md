@@ -1,7 +1,5 @@
 # FIA MCP Server — Implementation Plan
 
-> This document was the original plan used to kick off the project. It has been updated post-implementation to reflect what was actually built, including additions discovered during code review and deployment.
-
 ## Context
 
 bt-servant-worker needs to walk Bible translation teams through the FIA 6-step internalization process. The FIA Project exposes data via a GraphQL API. We're building a **thin MCP aggregation layer** over that GraphQL API — deployed as a Cloudflare Worker using the modern `agents` SDK with `createMcpHandler()`.
