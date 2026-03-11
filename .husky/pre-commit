@@ -1,0 +1,19 @@
+#!/usr/bin/env sh
+
+echo "Running dependency audit (production)..."
+npm run audit:prod
+
+echo "Running lint-staged..."
+npx lint-staged
+
+echo "Running type checks..."
+npm run check
+
+echo "Running architecture check..."
+npx depcruise --config .dependency-cruiser.js src
+
+echo "Running tests..."
+npm run test
+
+echo "Running build..."
+npm run build

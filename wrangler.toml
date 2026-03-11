@@ -1,0 +1,21 @@
+name = "fia-mcp"
+main = "src/index.ts"
+compatibility_date = "2025-04-01"
+compatibility_flags = ["nodejs_compat"]
+
+[vars]
+FIA_API_URL = "https://api.fiaproject.org/graphql"
+FIA_AUTH_URL = "https://auth.fiaproject.org/token"
+ENVIRONMENT = "production"
+
+# FIA_ACCESS_KEY set via: wrangler secret put FIA_ACCESS_KEY
+
+[env.staging]
+name = "fia-mcp-staging"
+[env.staging.vars]
+ENVIRONMENT = "staging"
+
+[env.dev]
+name = "fia-mcp-dev"
+[env.dev.vars]
+ENVIRONMENT = "development"
