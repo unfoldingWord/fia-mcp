@@ -191,13 +191,13 @@ Add to `MCP_SERVERS` KV (key: `unfoldingWord`):
   "id": "fia",
   "name": "FIA Internalization",
   "url": "https://fia.mcp.servant.bible/",
+  "authToken": "<MCP_SHARED_SECRET>",
   "enabled": true,
-  "priority": 2,
-  "headers": {
-    "Authorization": "Bearer <MCP_SHARED_SECRET>"
-  }
+  "priority": 2
 }
 ```
+
+bt-servant-worker's `buildHeaders()` automatically sends `Authorization: Bearer {authToken}` when `authToken` is set. No worker code changes needed.
 
 ## API Reference (JSON-RPC 2.0)
 

@@ -58,7 +58,7 @@ interface Result {
       pageInfo: { hasNextPage: boolean };
       edges: Array<{ node: StepRendering }>;
     };
-  };
+  } | null;
 }
 
 // Step order for sorting
@@ -81,6 +81,7 @@ export async function getStepRenderings(
   languageId: string
 ): Promise<string> {
   const data = await graphqlFetch<Result>(ctx, QUERY, { pericopeId });
+  if (!data.pericope) return `Pericope '${pericopeId}' not found.`;
   const pericope = data.pericope;
 
   // Filter by language

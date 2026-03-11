@@ -50,7 +50,7 @@ interface Result {
     id: string;
     verseRangeLong: string | null;
     terms: { pageInfo: { hasNextPage: boolean }; edges: Array<{ node: TermNode }> };
-  };
+  } | null;
 }
 
 function formatTranslation(t: TermTranslation, fallbackName: string): string {
@@ -80,6 +80,7 @@ export async function getPericopeTerms(
   languageId: string
 ): Promise<string> {
   const data = await graphqlFetch<Result>(ctx, QUERY, { pericopeId });
+  if (!data.pericope) return `Pericope '${pericopeId}' not found.`;
   const pericope = data.pericope;
   const label = pericope.verseRangeLong ?? pericope.id;
   const terms = pericope.terms.edges.map((e) => e.node);

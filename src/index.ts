@@ -129,12 +129,21 @@ function createServer(env: Env) {
   return server;
 }
 
+function timingSafeEqual(a: string, b: string): boolean {
+  if (a.length !== b.length) return false;
+  const encoder = new TextEncoder();
+  const bufA = encoder.encode(a);
+  const bufB = encoder.encode(b);
+  return crypto.subtle.timingSafeEqual(bufA, bufB);
+}
+
 function authenticateRequest(request: Request, env: Env): Response | null {
-  const authHeader = request.headers.get('Authorization');
+  if (!env.MCP_SHARED_SECRET) return null; // No secret configured = open (dev mode)
+
+  const authHeader = request.headers.get('Authorization') ?? '';
   const expected = `Bearer ${env.MCP_SHARED_SECRET}`;
 
-  if (!env.MCP_SHARED_SECRET) return null; // No secret configured = open (dev mode)
-  if (authHeader === expected) return null; // Authenticated
+  if (timingSafeEqual(authHeader, expected)) return null; // Authenticated
 
   return new Response(JSON.stringify({ error: 'Unauthorized' }), {
     status: 401,

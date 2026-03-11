@@ -43,11 +43,12 @@ interface Result {
         };
       }>;
     };
-  };
+  } | null;
 }
 
 export async function getPericopes(ctx: ToolContext, bookId: string): Promise<string> {
   const data = await graphqlFetch<Result>(ctx, QUERY, { bookId });
+  if (!data.book) return `Book '${bookId}' not found.`;
   const pericopes = data.book.pericopes.edges.map((e) => e.node);
 
   if (pericopes.length === 0) return `No pericopes found for book ${data.book.uniqueIdentifier}.`;

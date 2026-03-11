@@ -35,7 +35,7 @@ interface Result {
         };
       }>;
     };
-  };
+  } | null;
 }
 
 export async function listBooks(
@@ -44,6 +44,7 @@ export async function listBooks(
   testament?: string
 ): Promise<string> {
   const data = await graphqlFetch<Result>(ctx, QUERY, { languageId });
+  if (!data.language) return `Language '${languageId}' not found.`;
   let books = data.language.bookTranslations.edges.map((e) => e.node);
 
   if (testament) {

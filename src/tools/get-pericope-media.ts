@@ -114,7 +114,7 @@ interface Result {
     verseRangeLong: string | null;
     map: { pageInfo: { hasNextPage: boolean }; edges: Array<{ node: MapNode }> };
     mediaItems: { pageInfo: { hasNextPage: boolean }; edges: Array<{ node: MediaItemNode }> };
-  };
+  } | null;
 }
 
 type Translatable = { language: { id: string } };
@@ -170,6 +170,7 @@ export async function getPericopeMedia(
   languageId?: string
 ): Promise<string> {
   const data = await graphqlFetch<Result>(ctx, QUERY, { pericopeId });
+  if (!data.pericope) return `Pericope '${pericopeId}' not found.`;
   const pericope = data.pericope;
   const sections: string[] = [`## Media for pericope ${pericope.verseRangeLong ?? pericope.id}`];
 
